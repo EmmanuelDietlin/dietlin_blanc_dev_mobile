@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Todo_Emmanuel_Ludovic</string>
+    <string name="title_activity_task_detail">TaskDetailActivity</string>
 </resources>

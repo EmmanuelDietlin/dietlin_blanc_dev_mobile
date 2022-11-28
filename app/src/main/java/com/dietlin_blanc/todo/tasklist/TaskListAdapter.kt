@@ -1,13 +1,9 @@
 package com.dietlin_blanc.todo.tasklist
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.dietlin_blanc.todo.R
-import com.dietlin_blanc.todo.databinding.FragmentTaskListBinding
 import com.dietlin_blanc.todo.databinding.ItemTaskBinding
 
 object TasksDiffCallback : DiffUtil.ItemCallback<Task>() {
@@ -24,12 +20,17 @@ object TasksDiffCallback : DiffUtil.ItemCallback<Task>() {
 }
 
 
-class TaskListAdapter : androidx.recyclerview.widget.ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TasksDiffCallback) {
+class TaskListAdapter(val listener: TaskListListener) : androidx.recyclerview.widget.ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TasksDiffCallback) {
+
+    /*var onClickDelete: (Task) -> Unit = {}
+    var onClickEdit: (Task) -> Unit = {}*/
 
     inner class TaskViewHolder(var binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(task: Task) {
             binding.taskTitle.text = task.title
             binding.taskDescription.text = task.description
+            binding.delete.setOnClickListener { listener.onClickDelete(task) }
+            binding.edit.setOnClickListener{listener.onClickEdit(task)}
         }
     }
 
@@ -41,6 +42,8 @@ class TaskListAdapter : androidx.recyclerview.widget.ListAdapter<Task, TaskListA
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         holder.bind(this.currentList[position])
     }
+
+
 
 
 
