@@ -7,8 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.dietlin_blanc.todo.data.Api
 import com.dietlin_blanc.todo.databinding.FragmentTaskListBinding
 import com.dietlin_blanc.todo.detail.TaskDetailActivity
+import kotlinx.coroutines.launch
 
 interface TaskListListener {
     fun onClickDelete(task: Task)
@@ -17,14 +21,15 @@ interface TaskListListener {
 
 class TaskListFragment : Fragment() {
 
-    private var taskList = listOf(
+    /*private var taskList = listOf(
         Task(id = "id_1", title = "Task 1", description = "description 1"),
         Task(id = "id_2", title = "Task 2"),
         Task(id = "id_3", title = "Task 3")
-    )
+    )*/
     val adapterListener : TaskListListener = object : TaskListListener {
         override fun onClickDelete(task: Task) {
-            adapter.submitList(taskList - task); taskList = taskList - task
+            //adapter.submitList(taskList - task); taskList = taskList - task
+            viewModel.remove(task)
         }
 
         override fun onClickEdit(task: Task) {
@@ -41,18 +46,23 @@ class TaskListFragment : Fragment() {
     private val createTask = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val task = result.data?.getSerializableExtra("task") as Task?
         if (task != null) {
-            taskList = taskList + task
-            adapter.submitList(taskList)
+            //taskList = taskList + task
+            viewModel.add(task);
+            //adapter.submitList(taskList)
         }
     }
 
     private val editTask = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val task = result.data?.getSerializableExtra("task") as Task?
         if (task != null) {
-            taskList = taskList.map { if (it.id == task.id) task else it}
-            adapter.submitList(taskList)
+            println("pouic")
+            //taskList = taskList.map { if (it.id == task.id) task else it}
+            //adapter.submitList(taskList)
+            viewModel.edit(task)
         }
     }
+
+    private val viewModel: TasksListViewModel by viewModels()
 
 
 
@@ -65,7 +75,7 @@ class TaskListFragment : Fragment() {
     ): View? {
             _binding = FragmentTaskListBinding.inflate(layoutInflater)
             val rootView = binding.root
-            adapter.submitList(taskList)
+            //adapter.submitList(taskList)
 
             return rootView
 
@@ -84,12 +94,28 @@ class TaskListFragment : Fragment() {
             val intent = Intent(context, TaskDetailActivity::class.java)
             createTask.launch(intent)
         }
+        lifecycleScope.launch {
+            viewModel.tasksStateFlow.collect { newList ->
+                //taskList = newList
+                println(newList.size)
+                adapter.submitList(newList)
+            }
+        }
         /*adapter.onClickDelete = {task -> adapter.submitList(taskList - task); taskList = taskList - task }
         adapter.onClickEdit = {task ->
             val intent = Intent(context, TaskDetailActivity::class.java)
             intent.putExtra("task", task)
             editTask.launch(intent)
         }*/
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            val user = Api.userWebService.fetchUser().body()!!
+            binding.textInternet.text = user.name
+        }
+        viewModel.refresh()
     }
 
     override fun onDestroyView() {

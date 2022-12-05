@@ -1,6 +1,10 @@
 package com.dietlin_blanc.todo.tasklist
+import kotlinx.serialization.SerialName
 import java.io.Serializable
 
-data class Task(var id: String, var title: String, var description: String = "TBD") : Serializable {
+@kotlinx.serialization.Serializable
+data class Task(@SerialName("id") var id: String,
+                @SerialName("content")var title: String,
+                @SerialName("description")var description: String = "TBD") : Serializable {
 
 }
