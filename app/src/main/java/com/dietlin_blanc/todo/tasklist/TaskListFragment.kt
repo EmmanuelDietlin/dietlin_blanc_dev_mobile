@@ -9,9 +9,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import coil.load
 import com.dietlin_blanc.todo.data.Api
 import com.dietlin_blanc.todo.databinding.FragmentTaskListBinding
 import com.dietlin_blanc.todo.detail.TaskDetailActivity
+import com.dietlin_blanc.todo.user.UserActivity
 import kotlinx.coroutines.launch
 
 interface TaskListListener {
@@ -97,10 +99,10 @@ class TaskListFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.tasksStateFlow.collect { newList ->
                 //taskList = newList
-                println(newList.size)
                 adapter.submitList(newList)
             }
         }
+
         /*adapter.onClickDelete = {task -> adapter.submitList(taskList - task); taskList = taskList - task }
         adapter.onClickEdit = {task ->
             val intent = Intent(context, TaskDetailActivity::class.java)
@@ -111,11 +113,21 @@ class TaskListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        var uri : String? = null
         lifecycleScope.launch {
             val user = Api.userWebService.fetchUser().body()!!
             binding.textInternet.text = user.name
+            uri = user.avatar
+            binding.avatar.load(user.avatar) {
+                binding.avatar.load("https://lvdneng.rosselcdn.net/sites/default/files/dpistyles_v2/vdn_864w/2022/08/09/node_1214903/55550308/public/2022/08/09/B9731749502Z.1_20220809160423_000%2BG65L1O2VG.1-0.png?itok=eKn4dzbI1660053870") // image par défaut en cas d'erreur
+            }
         }
         viewModel.refresh()
+        binding.avatar.setOnClickListener {
+            val intent = Intent(context, UserActivity::class.java)
+            intent.putExtra("uri", uri)
+            startActivity(intent)
+        }
     }
 
     override fun onDestroyView() {

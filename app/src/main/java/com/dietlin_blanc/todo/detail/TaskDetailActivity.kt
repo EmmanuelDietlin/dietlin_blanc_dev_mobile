@@ -62,6 +62,7 @@ fun Detail(onValidate: (Task)->Unit, task: Task?) {
             }
 
             Column(modifier = Modifier.padding(16.dp ), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+
             Text(text = "Task detail", style = MaterialTheme.typography.h3)
                 OutlinedTextField(value = newTask.title, onValueChange = {newTask = newTask.copy(title = it)})
                 OutlinedTextField(value = newTask.description, onValueChange = {newTask = newTask.copy(description = it)})

@@ -45,5 +45,9 @@ object Api {
         retrofit.create(TaskWebService::class.java)
     }
 
+    val twitchWebService : TwitchWebService by lazy {
+        retrofit.create(TwitchWebService::class.java)
+    }
+
 
 }

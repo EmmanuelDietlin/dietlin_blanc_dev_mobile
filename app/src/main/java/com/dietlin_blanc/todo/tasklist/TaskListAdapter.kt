@@ -31,6 +31,7 @@ class TaskListAdapter(val listener: TaskListListener) : androidx.recyclerview.wi
             binding.taskDescription.text = task.description
             binding.delete.setOnClickListener { listener.onClickDelete(task) }
             binding.edit.setOnClickListener{listener.onClickEdit(task)}
+
         }
     }
 
