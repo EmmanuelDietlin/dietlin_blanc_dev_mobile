@@ -11,20 +11,16 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import com.dietlin_blanc.todo.data.User
+import com.dietlin_blanc.todo.detail.ui.theme.Todo_Emmanuel_LudovicTheme
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -43,83 +39,68 @@ class UserActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //setContentView(R.layout.activity_user)
-
         lifecycleScope.launch {
             viewModel.userStateFlow.collect {
                     user ->
                 if (user.avatar != null) uri = Uri.parse(user.avatar)
                 else uri = defaultUri
                 setContent {
-                    var param : String? = intent.getStringExtra("uri")
-                    /*
-                    var bitmap: Bitmap? by remember { mutableStateOf(null) }
-                    var uri: Uri? by remember { mutableStateOf(null) }*/
+                    Todo_Emmanuel_LudovicTheme {
+                        // A surface container using the 'background' color from the theme
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colors.background
+                        ) {
+                            val takePicture =
+                                rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+                                    if (success) {
+                                        viewModel.updateAvatar(capturedUri!!.toRequestBody())
+                                    }
 
+                                }
 
-                    /*
-                    val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
-                        bitmap = it
-                        lifecycleScope.launch {
-                            Api.userWebService.updateAvatar(bitmap!!.toRequestBody());
+                            val choosePicture =
+                                rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
+                                    viewModel.updateAvatar(it!!.toRequestBody())
+
+                                }
+
+                            Column {
+                                AsyncImage(
+                                    modifier = Modifier.fillMaxHeight(.2f),
+                                    model = uri,
+                                    contentDescription = null,
+                                )
+                                Button(
+                                    onClick = {
+                                        //takePicture.launch()
+                                        //askPermission.launch(READ_EXTERNAL_STORAGE)
+                                        takePicture.launch(capturedUri)
+                                    },
+                                    content = { Text("Take picture") }
+                                )
+                                Button(
+                                    onClick = {
+                                        choosePicture.launch(
+                                            PickVisualMediaRequest(
+                                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                                            )
+                                        )
+                                    },
+                                    content = { Text("Pick photo") }
+                                )
+                                if (user.name.equals(""))
+                                    Detail(user = User(intent.getStringExtra("name")!!, intent.getStringExtra("email")!!, intent.getStringExtra("uri")), viewModel = viewModel)
+                                else
+                                    Detail(user = user, viewModel = viewModel)
+                            }
                         }
-                    }*/
-
-                    val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-                        if (success) {
-                            viewModel.updateAvatar(capturedUri!!.toRequestBody())
-                            /*
-                            uri = capturedUri
-                            lifecycleScope.launch {
-                                Api.userWebService.updateAvatar(uri!!.toRequestBody());
-                            }*/
-                        }
-
-                    }
-
-                    val choosePicture = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
-                        viewModel.updateAvatar(it!!.toRequestBody())
-                        /*
-                        bitmap = null
-                        uri = it
-                        lifecycleScope.launch {
-                            Api.userWebService.updateAvatar(uri!!.toRequestBody());
-                        }*/
-                    }
-                    /*
-                    val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-                        if (it) takePicture.launch()
-                    }*/
-
-                    Column {
-                        AsyncImage(
-                            modifier = Modifier.fillMaxHeight(.2f),
-                            model = uri,
-                            contentDescription = null,
-                        )
-                        Button(
-                            onClick = {
-                                //takePicture.launch()
-                                //askPermission.launch(READ_EXTERNAL_STORAGE)
-                                takePicture.launch(capturedUri)
-                            },
-                            content = { Text("Take picture") }
-                        )
-                        Button(
-                            onClick = {
-                                choosePicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                            },
-                            content = { Text("Pick photo") }
-                        )
-                        Detail(user = user, viewModel = viewModel)
-                        /*
-                        OutlinedTextField(value = , onValueChange = {newTask = newTask.copy(title = it)})
-                        OutlinedTextField(value = , onValueChange = {newTask = newTask.copy(description = it)})*/
                     }
                 }
             }
         }
         viewModel.refresh()
+
 
 
 
@@ -151,16 +132,29 @@ class UserActivity : AppCompatActivity() {
 
 @Composable
 fun Detail(user : User, viewModel : UserViewModel) {
-    var email = user.email
-    var name = user.name
+    var newUser by remember {
+        mutableStateOf(
+            User(email = user.email,
+            name = user.name,
+            avatar = user.avatar
+        ))
+    }
     Column(modifier = Modifier.padding(16.dp ), verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
-        Text(text = "Task detail", style = MaterialTheme.typography.h3)
-        OutlinedTextField(value = name, onValueChange = {name = it})
-        OutlinedTextField(value = email, onValueChange = {email = it})
-        Button(onClick = { viewModel.edit(name, email)}) {
+        Text(text = "User informations", style = MaterialTheme.typography.h5)
+        OutlinedTextField(value = newUser.name, onValueChange = {newUser = newUser.copy(name = it)})
+        OutlinedTextField(value = newUser.email, onValueChange = {newUser = newUser.copy(email = it)})
+        Button(onClick = { viewModel.edit(newUser)}) {
 
         }
     }
 
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DetailPreview() {
+    Todo_Emmanuel_LudovicTheme {
+        //Detail()
+    }
 }

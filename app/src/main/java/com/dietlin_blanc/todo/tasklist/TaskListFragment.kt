@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.dietlin_blanc.todo.data.Api
+import com.dietlin_blanc.todo.data.User
 import com.dietlin_blanc.todo.databinding.FragmentTaskListBinding
 import com.dietlin_blanc.todo.detail.TaskDetailActivity
 import com.dietlin_blanc.todo.user.UserActivity
@@ -113,11 +114,10 @@ class TaskListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        var uri : String? = null
+        var user : User = User("","")
         lifecycleScope.launch {
-            val user = Api.userWebService.fetchUser().body()!!
+            user = Api.userWebService.fetchUser().body()!!
             binding.textInternet.text = user.name
-            uri = user.avatar
             binding.avatar.load(user.avatar) {
                 binding.avatar.load("https://lvdneng.rosselcdn.net/sites/default/files/dpistyles_v2/vdn_864w/2022/08/09/node_1214903/55550308/public/2022/08/09/B9731749502Z.1_20220809160423_000%2BG65L1O2VG.1-0.png?itok=eKn4dzbI1660053870") // image par défaut en cas d'erreur
             }
@@ -125,7 +125,9 @@ class TaskListFragment : Fragment() {
         viewModel.refresh()
         binding.avatar.setOnClickListener {
             val intent = Intent(context, UserActivity::class.java)
-            intent.putExtra("uri", uri)
+            intent.putExtra("uri", user.avatar)
+            intent.putExtra("name", user.name)
+            intent.putExtra("email", user.email)
             startActivity(intent)
         }
     }

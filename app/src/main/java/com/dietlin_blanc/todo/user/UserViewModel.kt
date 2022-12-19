@@ -13,7 +13,7 @@ class UserViewModel : ViewModel() {
     private val webService = Api.userWebService
 
     //public val uriStateFlow = MutableStateFlow<Uri?>(null)
-    public val userStateFlow = MutableStateFlow<User>(User("a", "a"))
+    public val userStateFlow = MutableStateFlow<User>(User("", ""))
 
     fun refresh() {
         viewModelScope.launch {
@@ -39,13 +39,9 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    fun edit(nom : String?, email : String?) {
-        var newName = nom ?: userStateFlow.value.name
-        var newMail = email ?: userStateFlow.value.email
-        var newUser = User(newName, newMail, userStateFlow.value.avatar)
-        println(newUser)
+    fun edit(user: User) {
         viewModelScope.launch {
-            val response = webService.update(newUser)// Call HTTP (opération longue)
+            val response = webService.update(user)// Call HTTP (opération longue)
             if (!response.isSuccessful) { // à cette ligne, on a reçu la réponse de l'API
                 Log.e("Network", "Error: ${response.message()}")
                 return@launch

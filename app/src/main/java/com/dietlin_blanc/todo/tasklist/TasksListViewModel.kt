@@ -24,10 +24,9 @@ class TasksListViewModel : ViewModel() {
         }
     }
 
-    // à compléter plus tard:
     fun add(task: Task) {
         viewModelScope.launch {
-            val response = webService.create(task) // TODO: appel réseau
+            val response = webService.create(task)
             if (!response.isSuccessful) {
                 Log.e("Network", "Error: ${response.raw()}")
                 return@launch
@@ -39,7 +38,7 @@ class TasksListViewModel : ViewModel() {
     }
     fun edit(task: Task) {
         viewModelScope.launch {
-            val response = webService.update(task) // TODO: appel réseau
+            val response = webService.update(task)
             if (!response.isSuccessful) {
                 Log.e("Network", "Error: ${response.raw()}")
                 return@launch
@@ -50,7 +49,7 @@ class TasksListViewModel : ViewModel() {
     }
     fun remove(task: Task) {
         viewModelScope.launch {
-            val response = webService.delete(task.id) // TODO: appel réseau
+            val response = webService.delete(task.id)
             if (!response.isSuccessful) {
                 Log.e("Network", "Error: ${response.raw()}")
                 return@launch

@@ -12,8 +12,8 @@ interface UserWebService {
     @POST("sync/v9/update_avatar")
     suspend fun updateAvatar(@Part avatar: MultipartBody.Part): Response<User>
 
-    @POST("sync/v9/users")
-    suspend fun update(@Body user: User): Response<User>
+    @POST("sync/v9/sync")
+    suspend fun update(@Body user: User): Response<Unit>
 
 
 }
