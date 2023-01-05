@@ -28,7 +28,9 @@ class TaskListAdapter(val listener: TaskListListener) : androidx.recyclerview.wi
     inner class TaskViewHolder(var binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(task: Task) {
             binding.taskTitle.text = task.title
+            binding.taskTitle.setOnLongClickListener { listener.onClickShare(binding.taskTitle.text.toString())}
             binding.taskDescription.text = task.description
+            binding.taskDescription.setOnLongClickListener {listener.onClickShare(binding.taskDescription.text.toString())}
             binding.delete.setOnClickListener { listener.onClickDelete(task) }
             binding.edit.setOnClickListener{listener.onClickEdit(task)}
 

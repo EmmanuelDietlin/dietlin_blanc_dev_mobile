@@ -1,10 +1,13 @@
 package com.dietlin_blanc.todo.user
 
+import android.Manifest
 import android.content.ContentValues
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.PickVisualMediaRequest
@@ -21,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import com.dietlin_blanc.todo.data.User
 import com.dietlin_blanc.todo.detail.ui.theme.Todo_Emmanuel_LudovicTheme
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -45,12 +49,15 @@ class UserActivity : AppCompatActivity() {
                 if (user.avatar != null) uri = Uri.parse(user.avatar)
                 else uri = defaultUri
                 setContent {
+
                     Todo_Emmanuel_LudovicTheme {
                         // A surface container using the 'background' color from the theme
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = MaterialTheme.colors.background
                         ) {
+
+
                             val takePicture =
                                 rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
                                     if (success) {
@@ -59,9 +66,27 @@ class UserActivity : AppCompatActivity() {
 
                                 }
 
+                            val askPicturePermission =
+                                rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                                    if (isGranted) {
+                                        takePicture.launch(capturedUri)
+                                    }
+
+                                }
+
                             val choosePicture =
                                 rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
                                     viewModel.updateAvatar(it!!.toRequestBody())
+
+                                }
+
+                            val askStoragePermission =
+                                rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                                    if (isGranted) {
+                                        choosePicture.launch(PickVisualMediaRequest(
+                                            ActivityResultContracts.PickVisualMedia.ImageOnly
+                                        ))
+                                    }
 
                                 }
 
@@ -75,17 +100,14 @@ class UserActivity : AppCompatActivity() {
                                     onClick = {
                                         //takePicture.launch()
                                         //askPermission.launch(READ_EXTERNAL_STORAGE)
-                                        takePicture.launch(capturedUri)
+                                        //takePicture.launch(capturedUri)
+                                              pickPhotoWithPermission(takePicture, capturedUri, askPicturePermission)
                                     },
                                     content = { Text("Take picture") }
                                 )
                                 Button(
                                     onClick = {
-                                        choosePicture.launch(
-                                            PickVisualMediaRequest(
-                                                ActivityResultContracts.PickVisualMedia.ImageOnly
-                                            )
-                                        )
+                                        choosePictureWithPermission(choosePicture, askStoragePermission)
                                     },
                                     content = { Text("Pick photo") }
                                 )
@@ -100,10 +122,6 @@ class UserActivity : AppCompatActivity() {
             }
         }
         viewModel.refresh()
-
-
-
-
 
     }
 
@@ -128,6 +146,45 @@ class UserActivity : AppCompatActivity() {
             body = fileBody
         )
     }
+
+    private fun pickPhotoWithPermission(takePicture: ManagedActivityResultLauncher<Uri, Boolean>, uri: Uri?, requestPermissionLauncher:  ManagedActivityResultLauncher<String, Boolean>
+    ) {
+        val camPermission = Manifest.permission.CAMERA
+        val permissionStatus = checkSelfPermission(camPermission)
+        val isAlreadyAccepted = permissionStatus == PackageManager.PERMISSION_GRANTED
+        val isExplanationNeeded = shouldShowRequestPermissionRationale(camPermission)
+        when {
+            isAlreadyAccepted -> takePicture.launch(uri)// lancer l'action souhaitée
+            isExplanationNeeded -> showMessage("Veuillez autoriser l'usage de la caméra pour prendre une photo de profil")
+            else -> requestPermissionLauncher.launch(camPermission)// lancer la demande de permission
+        }
+    }
+
+    private fun choosePictureWithPermission(choosePicture:  ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>, requestPermissionLauncher:  ManagedActivityResultLauncher<String, Boolean>
+    ) {
+        val storagePermission = Manifest.permission.READ_EXTERNAL_STORAGE
+        val permissionStatus = checkSelfPermission(storagePermission)
+        val isAlreadyAccepted = permissionStatus == PackageManager.PERMISSION_GRANTED
+        val isExplanationNeeded = shouldShowRequestPermissionRationale(storagePermission)
+        when {
+            isAlreadyAccepted -> choosePicture.launch(PickVisualMediaRequest(
+                ActivityResultContracts.PickVisualMedia.ImageOnly
+            ))// lancer l'action souhaitée
+            isExplanationNeeded -> showMessage("Veuillez autoriser l'usage du stockage externe pour charger une image")
+            else -> requestPermissionLauncher.launch(storagePermission)// lancer la demande de permission
+        }
+    }
+
+    private fun showMessage(message: String) {
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG).show()
+    }
+
+
+
+
+
+
+
 }
 
 @Composable
@@ -158,3 +215,5 @@ fun DetailPreview() {
         //Detail()
     }
 }
+
+

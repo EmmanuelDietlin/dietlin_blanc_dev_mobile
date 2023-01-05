@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 interface TaskListListener {
     fun onClickDelete(task: Task)
     fun onClickEdit(task: Task)
+    fun onClickShare(text: String) : Boolean
 }
 
 class TaskListFragment : Fragment() {
@@ -39,6 +40,18 @@ class TaskListFragment : Fragment() {
             val intent = Intent(context, TaskDetailActivity::class.java)
             intent.putExtra("task", task)
             editTask.launch(intent)
+        }
+
+        override fun onClickShare(text: String): Boolean {
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, text)
+                type = "text/plain"
+            }
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            startActivity(shareIntent)
+            return true
+
         }
     }
 
