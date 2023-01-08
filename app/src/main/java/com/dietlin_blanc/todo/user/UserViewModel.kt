@@ -5,9 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dietlin_blanc.todo.data.Api
 import com.dietlin_blanc.todo.data.User
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.util.*
 
 class UserViewModel : ViewModel() {
     private val webService = Api.userWebService
@@ -41,7 +45,18 @@ class UserViewModel : ViewModel() {
 
     fun edit(user: User) {
         viewModelScope.launch {
-            val response = webService.update(user)// Call HTTP (opération longue)
+
+            var args = JsonObject()
+            var body = JsonObject()
+            args.add("email", JsonPrimitive(user.email))
+            args.add("full_name", JsonPrimitive(user.name))
+            body.add("type", JsonPrimitive("user_update"))
+            body.add("uuid", JsonPrimitive(UUID.randomUUID().toString()))
+            body.add("args", args)
+
+            var requestBody = "commands='[$body]'".toRequestBody()
+
+            val response = webService.update(requestBody)// Call HTTP (opération longue)
             if (!response.isSuccessful) { // à cette ligne, on a reçu la réponse de l'API
                 Log.e("Network", "Error: ${response.message()}")
                 return@launch

@@ -198,11 +198,11 @@ fun Detail(user : User, viewModel : UserViewModel) {
     }
     Column(modifier = Modifier.padding(16.dp ), verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
-        Text(text = "User informations", style = MaterialTheme.typography.h5)
+        Text(text = "Update user informations", style = MaterialTheme.typography.h5)
         OutlinedTextField(value = newUser.name, onValueChange = {newUser = newUser.copy(name = it)})
         OutlinedTextField(value = newUser.email, onValueChange = {newUser = newUser.copy(email = it)})
-        Button(onClick = { viewModel.edit(newUser)}) {
-
+        TextButton(onClick = { viewModel.edit(newUser)}) {
+            Text(text = "Update")
         }
     }
 
