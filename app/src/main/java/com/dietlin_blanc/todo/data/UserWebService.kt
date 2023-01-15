@@ -16,7 +16,5 @@ interface UserWebService {
 
     @POST("sync/v9/sync")
     suspend fun update(@Body body : RequestBody): Response<Unit>
-    //suspend fun update(@): Response<Unit>
-
 
 }

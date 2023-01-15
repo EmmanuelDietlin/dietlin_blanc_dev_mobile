@@ -46,10 +46,14 @@ class UserViewModel : ViewModel() {
     fun edit(user: User) {
         viewModelScope.launch {
 
+            //La mise à jour des informations utilisateur ne marche pas
+            //bien que la commande envoyée soit exactement celle présentée dans la documentation de l'API
+
             var args = JsonObject()
             var body = JsonObject()
             args.add("email", JsonPrimitive(user.email))
             args.add("full_name", JsonPrimitive(user.name))
+            args.add("current_password", JsonPrimitive("XPjMRG87J7BESHMnxZBWQJc4"))
             body.add("type", JsonPrimitive("user_update"))
             body.add("uuid", JsonPrimitive(UUID.randomUUID().toString()))
             body.add("args", args)
