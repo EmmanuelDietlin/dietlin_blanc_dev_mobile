@@ -76,7 +76,8 @@ class UserActivity : AppCompatActivity() {
 
                             val choosePicture =
                                 rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
-                                    viewModel.updateAvatar(it!!.toRequestBody())
+                                    if (it != null)
+                                        viewModel.updateAvatar(it.toRequestBody())
 
                                 }
 
